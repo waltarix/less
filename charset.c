@@ -21,6 +21,7 @@
 #endif
 
 #include "charset.h"
+#include "wcwidth9.h"
 
 #if MSDOS_COMPILER==WIN32C
 #define WIN32_LEAN_AND_MEAN
@@ -827,7 +828,7 @@ is_ubin_char(ch)
 is_wide_char(ch)
 	LWCHAR ch;
 {
-	return is_in_table(ch, &wide_table);
+    return wcwidth9(ch) == 2;
 }
 
 /*
