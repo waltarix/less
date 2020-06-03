@@ -45,15 +45,6 @@ sub check_files {
 	if ($ver_version ne $news_version) {
 		error("$news_file: latest version comparision is for $news_version not $ver_version");
 	}
-	my $pull_out = `git pull --dry-run 2>&1 | grep ' ->'`;
-	if ($pull_out) {
-		error("git: need to pull");
-	}
-	my $stat_out = `git status | grep "Changes not staged for commit:"`;
-	if ($stat_out) {
-		error("git: need to commit changes");
-	}
-
 	if ($errors == 0) {
 		print "$ver_version ready for release\n";
 	} else {

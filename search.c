@@ -355,6 +355,15 @@ public void undo_search(int clear)
 #endif
 }
 
+/*
+ * Toggle usage state of migemo.
+ * Updates the internal search state to reflect a change in the -% flag.
+ */
+public void chg_migemo_search(void)
+{
+	clear_pattern(&search_info);
+}
+
 #if HILITE_SEARCH
 /*
  * Clear the hilite list.
