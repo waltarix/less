@@ -519,6 +519,26 @@ opt_i(type, s)
 }
 
 /*
+ * Handler for the -% option.
+ */
+	/*ARGSUSED*/
+	public void
+opt_migemo(type, s)
+	int type;
+	char *s;
+{
+	switch (type)
+	{
+	case TOGGLE:
+		chg_migemo_search();
+		break;
+	case QUERY:
+	case INIT:
+		break;
+	}
+}
+
+/*
  * Handler for the -V option.
  */
 	/*ARGSUSED*/

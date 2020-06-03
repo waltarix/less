@@ -64,6 +64,7 @@ public int status_col_width;    /* Width of status column */
 public int incr_search;         /* Incremental search */
 public int use_color;           /* Use UI color */
 public int want_filesize;       /* */
+public int migemo_search;       /* Migemo search */
 #if HILITE_SEARCH
 public int hilite_search;       /* Highlight matched search patterns? */
 #endif
@@ -125,6 +126,7 @@ static struct optname quote_optname  = { "quotes",               NULL };
 static struct optname tilde_optname  = { "tilde",                NULL };
 static struct optname query_optname  = { "help",                 NULL };
 static struct optname pound_optname  = { "shift",                NULL };
+static struct optname migemo_optname = { "migemo-search",        NULL };
 static struct optname keypad_optname = { "no-keypad",            NULL };
 static struct optname oldbot_optname = { "old-bot",              NULL };
 static struct optname follow_optname = { "follow-name",          NULL };
@@ -451,6 +453,14 @@ static struct loption option[] =
 		{
 			"Horizontal shift: ",
 			"0123456789.",
+			NULL
+		}
+	},
+	{ '%', &migemo_optname,
+		BOOL|HL_REPAINT, OPT_OFF, &migemo_search, opt_migemo,
+		{
+			"Don't use migemo",
+			"Use migemo",
 			NULL
 		}
 	},
