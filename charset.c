@@ -28,6 +28,8 @@
 #include <windows.h>
 #endif
 
+#include "wcwidth9.h"
+
 extern int bs_mode;
 
 public int utf_mode = 0;
@@ -819,10 +821,6 @@ DECLARE_RANGE_TABLE_START(ubin)
 #include "ubin.uni"
 DECLARE_RANGE_TABLE_END(ubin)
 
-DECLARE_RANGE_TABLE_START(wide)
-#include "wide.uni"
-DECLARE_RANGE_TABLE_END(wide)
-
 DECLARE_RANGE_TABLE_START(fmt)
 #include "fmt.uni"
 DECLARE_RANGE_TABLE_END(fmt)
@@ -833,7 +831,7 @@ static struct wchar_range comb_table[] = {
 };
 
 
-static lbool is_in_table(LWCHAR ch, struct wchar_range_table *table)
+static inline lbool is_in_table(LWCHAR ch, struct wchar_range_table *table)
 {
 	unsigned int hi;
 	unsigned int lo;
@@ -884,8 +882,7 @@ public lbool is_ubin_char(LWCHAR ch)
  */
 public lbool is_wide_char(LWCHAR ch)
 {
-	return is_in_table(ch, &user_wide_table) ||
-	       is_in_table(ch, &wide_table);
+	return wcwidth9(ch) == 2;
 }
 
 /*
