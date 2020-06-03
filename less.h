@@ -25,7 +25,7 @@
  * Include the file of compile-time options.
  * The <> make cc search for it in -I., not srcdir.
  */
-#include <defines.h>
+#include "defines.h"
 
 #ifdef _SEQUENT_
 /*
@@ -582,4 +582,12 @@ int lstrtoi LESSPARAMS ((char*, char**));
 POSITION lstrtopos LESSPARAMS ((char*, char**));
 #if MSDOS_COMPILER==WIN32C
 int pclose LESSPARAMS ((FILE*));
+#endif
+
+#ifdef HAVE_PCRE2
+#ifdef HAVE_PCRE2_JIT
+#define PCRE2_MATCH_FUNCTION pcre2_jit_match
+#else
+#define PCRE2_MATCH_FUNCTION pcre2_match
+#endif
 #endif

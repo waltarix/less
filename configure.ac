@@ -199,6 +199,8 @@ AH_TEMPLATE([HAVE_PCRE],
 	[PCRE (Perl-compatible regular expression) library])
 AH_TEMPLATE([HAVE_PCRE2],
 	[PCRE2 (Perl-compatible regular expression) library])
+AH_TEMPLATE([HAVE_PCRE2_JIT],
+	[define HAVE_PCRE2_JIT if pcre2 is built with JIT])
 AH_TEMPLATE([HAVE_RE_COMP],
 	[BSD re_comp()])
 AH_TEMPLATE([HAVE_REGCMP],
@@ -452,7 +454,20 @@ fi
 if test $have_regex = no; then
 if test $WANT_REGEX = auto -o $WANT_REGEX = pcre2; then
 AC_CHECK_LIB(pcre2-8, pcre2_compile_8, 
-[AC_DEFINE(HAVE_PCRE2) LIBS="$LIBS -lpcre2-8" have_regex=yes; supported_regex="$supported_regex pcre2"], [])
+[
+ AC_DEFINE(HAVE_PCRE2) LIBS="$LIBS -lpcre2-8 -lmigemo" have_regex=yes; supported_regex="$supported_regex pcre2"
+ AC_RUN_IFELSE([AC_LANG_PROGRAM([[
+#define PCRE2_CODE_UNIT_WIDTH 8
+#include <pcre2.h>
+ ]],
+ [[
+int hasjit;
+pcre2_config(PCRE2_CONFIG_JIT, &hasjit);
+if (hasjit == 0) exit(1);
+ ]])],
+ [AC_DEFINE(HAVE_PCRE2_JIT)],
+ [])
+ ], [])
 fi
 fi
 

@@ -43,10 +43,10 @@ DISTFILES = \
 	less.hlp \
 	mkfuncs.pl mkhelp.pl \
 	mkfuncs.py mkhelp.py \
-	mkutable $(UNICODE_FILES) \
+	mkutable $(UNICODE_FILES) wcwidth9.h \
 	${DISTFILES_W}
 
-all: help.c funcs.h $(UNICODE_FILES) ${srcdir}/configure 
+all: help.c funcs.h $(UNICODE_FILES) wcwidth9.h ${srcdir}/configure 
 
 release: .FORCE
 	@if grep -s 'Major changes between .*${REL}' NEWS ; then :; else echo '*** NEWS is not updated for ${REL}'; exit 1; fi
@@ -120,6 +120,9 @@ unicode/EastAsianWidth.txt:
 	mkdir -p unicode
 	curl -s -u 'anonymous:${EMAIL}' -o $@ ftp://ftp.unicode.org/Public/UNIDATA/EastAsianWidth.txt
 
+wcwidth9.h:
+	curl -sL -o $@ https://github.com/waltarix/localedata/releases/download/13.0.0-r1/wcwidth9.h
+
 distfiles: ${DISTFILES}
 
 echo_distfiles: 
@@ -136,11 +139,6 @@ dist: ${DISTFILES}
 	cd $$LESSREL && chmod -w * && chmod +w ${DISTFILES_W} && chmod +x configure && cd .. && \
 	echo "Creating $$RELDIR/${REL}.tar.gz" && \
 	tar -cf - $$LESSREL | gzip -c >$$RELDIR/$$LESSREL.tar.gz && \
-	echo "Signing $$RELDIR/$$LESSREL.tar.gz" && \
-	gpg --detach-sign $$RELDIR/$$LESSREL.tar.gz && \
-	mv $$RELDIR/$$LESSREL.tar.gz.sig $$RELDIR/$$LESSREL.sig && \
-	echo "Creating $$RELDIR/$$LESSREL.zip" && \
-	zip -rq $$RELDIR/$$LESSREL.zip $$LESSREL && \
 	rm -rf $$LESSREL
 
 tagall:
