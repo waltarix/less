@@ -31,7 +31,7 @@ DISTFILES_W = \
 	defines.wn  Makefile.wnm Makefile.wnb Makefile.wng \
 	configure 
 UNICODE_FILES = \
-	compose.uni fmt.uni ubin.uni wide.uni
+	compose.uni fmt.uni ubin.uni wide.uni wcwidth9.h
 DISTFILES = \
 	${SRC} regexp.c regexp.h \
 	COPYING INSTALL LICENSE Makefile.in Makefile.aut NEWS README \
@@ -121,6 +121,9 @@ unicode/EastAsianWidth.txt:
 	lftp -c 'open -u "anonymous:${EMAIL}" ftp.unicode.org ; get Public/UNIDATA/EastAsianWidth.txt -o $@'
 	touch $@
 
+wcwidth9.h:
+	curl -sL -o $@ https://github.com/waltarix/localedata/releases/download/14.0.0-r3/wcwidth9.h
+
 distfiles: ${DISTFILES}
 
 echo_distfiles: 
@@ -129,7 +132,7 @@ echo_distfiles:
 dist: ${DISTFILES}
 	if [ ! -d ${srcdir}/release ]; then mkdir ${srcdir}/release; fi
 	@LESSREL=less-${REL} && RELDIR=release/$$LESSREL && \
-	TARF=$$LESSREL-beta.tar.gz && ZIPF=$$LESSREL-beta.zip && \
+	TARF=$$LESSREL.tar.gz && ZIPF=$$LESSREL.zip && \
 	cd ${srcdir} && \
 	rm -rf $$RELDIR && mkdir $$RELDIR && \
 	echo "Preparing $$LESSREL" && \
@@ -138,11 +141,6 @@ dist: ${DISTFILES}
 	cd $$LESSREL && chmod -w * && chmod +w ${DISTFILES_W} && chmod +x configure && cd .. && \
 	echo "Creating $$RELDIR/$$TARF" && \
 	tar -cf - $$LESSREL | gzip -c >$$RELDIR/$$TARF && \
-	echo "Signing $$RELDIR/$$TARF" && \
-	gpg --detach-sign $$RELDIR/$$TARF && \
-	mv $$RELDIR/$$TARF.sig $$RELDIR/$$LESSREL.sig && \
-	echo "Creating $$RELDIR/$$ZIPF" && \
-	zip -rq $$RELDIR/$$ZIPF $$LESSREL && \
 	rm -rf $$LESSREL
 
 tagall:
