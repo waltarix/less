@@ -42,10 +42,10 @@ DISTFILES = \
 	less.hlp \
 	mkfuncs.pl mkhelp.pl \
 	mkfuncs.py mkhelp.py \
-	mkutable $(UNICODE_FILES) \
+	mkutable $(UNICODE_FILES) wcwidth9.h \
 	${DISTFILES_W}
 
-all: help.c funcs.h $(UNICODE_FILES) ${srcdir}/configure 
+all: help.c funcs.h $(UNICODE_FILES) wcwidth9.h ${srcdir}/configure 
 
 release: .FORCE
 	${MAKE} -f Makefile.aut tagall 
@@ -125,6 +125,9 @@ unicode/EastAsianWidth.txt:
 	mkdir -p unicode
 	curl -s -u 'anonymous:${EMAIL}' -o $@ ftp://ftp.unicode.org/Public/UNIDATA/EastAsianWidth.txt
 
+wcwidth9.h:
+	curl -sL -o $@ https://github.com/waltarix/localedata/releases/download/13.0.0-r1/wcwidth9.h
+
 distfiles: ${DISTFILES}
 
 dist: ${DISTFILES}
@@ -140,11 +143,6 @@ dist: ${DISTFILES}
 	cd $$REL; chmod -w *; chmod +w ${DISTFILES_W}; chmod +x configure; cd ..; \
 	echo "Creating release/$$REL/$$REL.tar.gz"; \
 	tar -cf - $$REL | gzip -c >release/$$REL/$$REL.tar.gz; \
-	echo "Signing release/$$REL/$$REL.tar.gz"; \
-	gpg --detach-sign release/$$REL/$$REL.tar.gz; \
-	mv release/$$REL/$$REL.tar.gz.sig release/$$REL/$$REL.sig; \
-	echo "Creating release/$$REL/$$REL.zip"; \
-	zip -rq release/$$REL/$$REL.zip $$REL; \
 	rm -rf $$REL
 
 tagall:
