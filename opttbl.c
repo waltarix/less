@@ -89,6 +89,8 @@ public int hilite_search;       /* Highlight matched search patterns? */
 
 public int less_is_more = 0;    /* Make compatible with POSIX more */
 
+public int migemo_search;       /* Migemo search */
+
 /*
  * Long option names.
  */
@@ -145,6 +147,7 @@ static struct optname quote_optname  = { "quotes",               NULL };
 static struct optname tilde_optname  = { "tilde",                NULL };
 static struct optname query_optname  = { "help",                 NULL };
 static struct optname pound_optname  = { "shift",                NULL };
+static struct optname migemo_optname = { "migemo-search",        NULL };
 static struct optname keypad_optname = { "no-keypad",            NULL };
 static struct optname oldbot_optname = { "old-bot",              NULL };
 static struct optname follow_optname = { "follow-name",          NULL };
@@ -488,6 +491,14 @@ static struct loption option[] =
 		{
 			"Horizontal shift: ",
 			".d",
+			NULL
+		}
+	},
+	{ '%', &migemo_optname,
+		BOOL|HL_REPAINT, OPT_OFF, &migemo_search, opt_migemo,
+		{
+			"Don't use migemo",
+			"Use migemo",
 			NULL
 		}
 	},
