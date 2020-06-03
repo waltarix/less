@@ -668,3 +668,11 @@ unsigned long lstrtoulc(constant char*, constant char**, int);
 #if MSDOS_COMPILER==WIN32C
 int pclose(FILE*);
 #endif
+
+#ifdef HAVE_PCRE2
+#ifdef HAVE_PCRE2_JIT
+#define PCRE2_MATCH_FUNCTION pcre2_jit_match
+#else
+#define PCRE2_MATCH_FUNCTION pcre2_match
+#endif
+#endif
