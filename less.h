@@ -18,7 +18,7 @@
  * Include the file of compile-time options.
  * The <> make cc search for it in -I., not srcdir.
  */
-#include <defines.h>
+#include "defines.h"
 
 #ifdef _SEQUENT_
 /*

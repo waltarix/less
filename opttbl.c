@@ -52,6 +52,7 @@ public int no_hist_dups;	/* Remove dups from history list */
 public int mousecap;		/* Allow mouse for scrolling */
 public int wheel_lines;		/* Number of lines to scroll on mouse wheel scroll */
 public int perma_marks;		/* Save marks in history file */
+public int migemo_search;	/* Migemo search */
 #if HILITE_SEARCH
 public int hilite_search;	/* Highlight matched search patterns? */
 #endif
@@ -112,6 +113,7 @@ static struct optname quote_optname  = { "quotes",               NULL };
 static struct optname tilde_optname  = { "tilde",                NULL };
 static struct optname query_optname  = { "help",                 NULL };
 static struct optname pound_optname  = { "shift",                NULL };
+static struct optname migemo_optname = { "migemo-search",        NULL };
 static struct optname keypad_optname = { "no-keypad",            NULL };
 static struct optname oldbot_optname = { "old-bot",              NULL };
 static struct optname follow_optname = { "follow-name",          NULL };
@@ -425,6 +427,14 @@ static struct loption option[] =
 		{
 			"Horizontal shift: ",
 			"0123456789.",
+			NULL
+		}
+	},
+	{ '%', &migemo_optname,
+		BOOL|HL_REPAINT, OPT_OFF, &migemo_search, opt_migemo,
+		{
+			"Don't use migemo",
+			"Use migemo",
 			NULL
 		}
 	},

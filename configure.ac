@@ -436,7 +436,7 @@ fi
 if test $have_regex = no; then
 if test $WANT_REGEX = auto -o $WANT_REGEX = pcre2; then
 AC_CHECK_LIB(pcre2-8, pcre2_compile_8, 
-[AC_DEFINE(HAVE_PCRE2) LIBS="$LIBS -lpcre2-8" have_regex=yes; supported_regex="$supported_regex pcre2"], [])
+[AC_DEFINE(HAVE_PCRE2) LIBS="$LIBS -lpcre2-8 -lmigemo" have_regex=yes; supported_regex="$supported_regex pcre2"], [])
 fi
 fi
 
