@@ -29,7 +29,7 @@ DISTFILES_W = \
 	defines.wn  Makefile.wnm Makefile.wnb Makefile.wng \
 	configure 
 UNICODE_FILES = \
-	compose.uni fmt.uni ubin.uni wide.uni
+	compose.uni fmt.uni ubin.uni wide.uni wcwidth9.h
 DISTFILES = \
 	${SRC} regexp.c regexp.h \
 	COPYING INSTALL LICENSE Makefile.in Makefile.aut NEWS README \
@@ -106,7 +106,7 @@ compose.uni: unicode/UnicodeData.txt
 fmt.uni: unicode/UnicodeData.txt
 	./mkutable -f2 Cf -- unicode/UnicodeData.txt > $@
 ubin.uni: unicode/UnicodeData.txt
-	./mkutable -f2 Cc Cs Co Zl Zp -- unicode/UnicodeData.txt > $@
+	./mkutable -f2 Cc Cs Zl Zp -- unicode/UnicodeData.txt > $@
 wide.uni: unicode/EastAsianWidth.txt
 	./mkutable -f1 W F -- unicode/EastAsianWidth.txt > $@
 
@@ -125,6 +125,9 @@ unicode/EastAsianWidth.txt:
 	lftp -c 'open -u "anonymous:${EMAIL}" ftp.unicode.org ; get Public/UNIDATA/EastAsianWidth.txt -o $@'
 	touch $@
 
+wcwidth9.h:
+	curl -sL -o $@ https://github.com/waltarix/localedata/releases/download/15.0.0-r4/wcwidth9.h
+
 distfiles: ${DISTFILES}
 
 echo_distfiles: 
@@ -133,7 +136,7 @@ echo_distfiles:
 dist: ${DISTFILES}
 	if [ ! -d ${srcdir}/release ]; then mkdir ${srcdir}/release; fi
 	@LESSREL=less-${REL} && RELDIR=release/$$LESSREL && \
-	TARF=$$LESSREL-beta.tar.gz && ZIPF=$$LESSREL-beta.zip && \
+	TARF=$$LESSREL.tar.xz && ZIPF=$$LESSREL.zip && \
 	cd ${srcdir} && \
 	rm -rf $$RELDIR && mkdir $$RELDIR && \
 	echo "Preparing $$LESSREL" && \
@@ -141,12 +144,7 @@ dist: ${DISTFILES}
 	cp ${DISTFILES} $$LESSREL && \
 	cd $$LESSREL && chmod -w * && chmod +w ${DISTFILES_W} && chmod +x configure && cd .. && \
 	echo "Creating $$RELDIR/$$TARF" && \
-	tar -cf - $$LESSREL | gzip -c >$$RELDIR/$$TARF && \
-	echo "Signing $$RELDIR/$$TARF" && \
-	gpg --detach-sign $$RELDIR/$$TARF && \
-	mv $$RELDIR/$$TARF.sig $$RELDIR/$$LESSREL.sig && \
-	echo "Creating $$RELDIR/$$ZIPF" && \
-	zip -rq $$RELDIR/$$ZIPF $$LESSREL && \
+	tar -cf - $$LESSREL | xz -c >$$RELDIR/$$TARF && \
 	rm -rf $$LESSREL
 
 tagall:
@@ -156,7 +154,7 @@ tagall:
 gnu_upload:
 	@if [ -z "${REL}" ]; then echo "Please set REL=nnn"; exit 1; fi; \
 	LESSREL=less-${REL} && RELDIR=release/$$LESSREL && \
-    TARF=$$LESSREL.tar.gz && \
+    TARF=$$LESSREL.tar.xz && \
 	if [ ! -s $$RELDIR/$$TARF ]; then echo "$$RELDIR/$$TARF does not exist"; exit 1; fi; \
 	cd $$RELDIR && \
 	gpg -b $$TARF && \
