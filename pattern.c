@@ -5,9 +5,16 @@
  */
 
 #include "less.h"
+#include "migemo.h"
+#include <stdlib.h>
+#include <syslog.h>
+#if HAVE_LOCALE
+#include <locale.h>
+#endif
 
 extern int caseless;
 extern int utf_mode;
+extern int migemo_search;
 
 /*
  * Compile a search pattern, for future use by match_pattern.
@@ -73,11 +80,35 @@ compile_pattern2(pattern, search_type, comp_pattern, show_error)
 	*comp_pattern = comp;
 #endif
 #if HAVE_PCRE2
+	char **ptr_pattern;
+	migemo *m = NULL;
+	unsigned char *migemo_pattern;
+	if (migemo_search)
+	{
+#if HAVE_LOCALE
+		setlocale(LC_ALL, "C");
+#endif
+		char* migemo_dict = getenv("MIGEMO_DICT");
+		m = migemo_open(migemo_dict);
+#if HAVE_LOCALE
+		setlocale(LC_ALL, "");
+#endif
+		migemo_pattern = migemo_query(m, (const unsigned char *)pattern);
+		ptr_pattern = (char **)&migemo_pattern;
+	} else
+	{
+		ptr_pattern = &pattern;
+	}
 	int errcode;
+	int jitret;
 	PCRE2_SIZE erroffset;
 	PARG parg;
-	pcre2_code *comp = pcre2_compile((PCRE2_SPTR)pattern, strlen(pattern),
-			0, &errcode, &erroffset, NULL);
+	pcre2_code *comp = pcre2_compile((PCRE2_SPTR)*ptr_pattern, strlen(*ptr_pattern),
+			(utf_mode) ? PCRE2_UTF : 0, &errcode, &erroffset, NULL);
+	if (m != NULL) {
+		migemo_release(m, migemo_pattern);
+		migemo_close(m);
+	}
 	if (comp == NULL)
 	{
 		if (show_error)
@@ -86,6 +117,16 @@ compile_pattern2(pattern, search_type, comp_pattern, show_error)
 			pcre2_get_error_message(errcode, (PCRE2_UCHAR*)msg, sizeof(msg));
 			parg.p_string = msg;
 			error("%s", &parg);
+		}
+		return (-1);
+	}
+	jitret = pcre2_jit_compile(comp, PCRE2_JIT_COMPLETE);
+	if (jitret)
+	{
+		if (show_error)
+		{
+			parg.p_int = jitret;
+			error("Couldn't JIT, got '%d'", &parg);
 		}
 		return (-1);
 	}
@@ -376,7 +417,7 @@ match_pattern(pattern, tpattern, line, line_len, sp, ep, notbol, search_type)
 	{
 		int flags = (notbol) ? PCRE2_NOTBOL : 0;
 		pcre2_match_data *md = pcre2_match_data_create(3, NULL);
-		matched = pcre2_match(pattern, (PCRE2_SPTR)line, line_len,
+		matched = pcre2_jit_match(pattern, (PCRE2_SPTR)line, line_len,
 			0, flags, md, NULL) >= 0;
 		if (matched)
 		{
