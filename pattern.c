@@ -12,10 +12,14 @@
  */
 
 #include "less.h"
+#include "migemo.h"
+#include <stdlib.h>
+#include <syslog.h>
 
 extern int caseless;
 extern int is_caseless;
 extern int utf_mode;
+extern int migemo_search;
 
 /*
  * Compile a search pattern, for future use by match_pattern.
@@ -24,7 +28,7 @@ static int compile_pattern2(constant char *pattern, int search_type, PATTERN_TYP
 {
 	if (search_type & SRCH_NO_REGEX)
 		return (0);
-  {
+	{
 #if HAVE_GNU_REGEX
 	struct re_pattern_buffer *comp = (struct re_pattern_buffer *)
 		ecalloc(1, sizeof(struct re_pattern_buffer));
@@ -77,13 +81,29 @@ static int compile_pattern2(constant char *pattern, int search_type, PATTERN_TYP
 	*comp_pattern = comp;
 #endif
 #if HAVE_PCRE2
+	char *ptr_pattern;
+	migemo *m = NULL;
+	unsigned char *migemo_pattern;
+	if (migemo_search)
+	{
+		char* migemo_dict = getenv("MIGEMO_DICT");
+		m = migemo_open(migemo_dict);
+		migemo_pattern = migemo_query(m, (const unsigned char *)pattern);
+		ptr_pattern = (char *)migemo_pattern;
+	} else
+	{
+		ptr_pattern = pattern;
+	}
 	int errcode;
 	PCRE2_SIZE erroffset;
 	PARG parg;
-	pcre2_code *comp = pcre2_compile((PCRE2_SPTR)pattern, strlen(pattern),
+	pcre2_code *comp = pcre2_compile((PCRE2_SPTR)ptr_pattern, strlen(ptr_pattern),
 			((utf_mode) ? PCRE2_UTF | PCRE2_NO_UTF_CHECK : 0) |
-			(is_caseless ? PCRE2_CASELESS : 0),
-			&errcode, &erroffset, NULL);
+			(is_caseless ? PCRE2_CASELESS : 0) | (utf_mode ? PCRE2_UTF : 0), &errcode, &erroffset, NULL);
+	if (m != NULL) {
+		migemo_release(m, migemo_pattern);
+		migemo_close(m);
+	}
 	if (comp == NULL)
 	{
 		if (show_error)
@@ -95,6 +115,19 @@ static int compile_pattern2(constant char *pattern, int search_type, PATTERN_TYP
 		}
 		return (-1);
 	}
+#if HAVE_PCRE2_JIT
+	int jitret;
+	jitret = pcre2_jit_compile(comp, PCRE2_JIT_COMPLETE);
+	if (jitret)
+	{
+		if (show_error)
+		{
+			parg.p_int = jitret;
+			error("Couldn't JIT, got '%d'", &parg);
+		}
+		return (-1);
+	}
+#endif
 	*comp_pattern = comp;
 #endif
 #if HAVE_RE_COMP
@@ -127,7 +160,7 @@ static int compile_pattern2(constant char *pattern, int search_type, PATTERN_TYP
 	if (comp == NULL)
 	{
 		/*
-		 * regcomp has already printed an error message 
+		 * regcomp has already printed an error message
 		 * via regerror().
 		 */
 		return (-1);
@@ -136,7 +169,7 @@ static int compile_pattern2(constant char *pattern, int search_type, PATTERN_TYP
 		free(*comp_pattern);
 	*comp_pattern = comp;
 #endif
-  }
+	}
 	return (0);
 }
 
@@ -396,7 +429,7 @@ static lbool match_pattern1(PATTERN_TYPE pattern, constant char *tpattern, const
 	{
 		int flags = (notbol) ? PCRE2_NOTBOL : 0;
 		pcre2_match_data *md = pcre2_match_data_create_from_pattern(pattern, NULL);
-		int mcount = pcre2_match(pattern, (PCRE2_SPTR)line, line_len,
+		int mcount = PCRE2_MATCH_FUNCTION(pattern, (PCRE2_SPTR)line, line_len,
 			line_off, flags, md, NULL);
 		matched = (mcount > 0);
 		if (matched)
@@ -497,7 +530,11 @@ public constant char * pattern_lib_name(void)
 	return ("POSIX");
 #else
 #if HAVE_PCRE2
+#if HAVE_PCRE2_JIT
+	return ("PCRE2 (JIT)");
+#else
 	return ("PCRE2");
+#endif
 #else
 #if HAVE_PCRE
 	return ("PCRE");

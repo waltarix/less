@@ -76,7 +76,7 @@ lesskey$(EXEEXT): lesskey.${O} lesskey_parse.${O} xbuf.${O} version.${O}
 lessecho$(EXEEXT): lessecho.${O} version.${O}
 	${CC} ${LDFLAGS} -o $@ lessecho.${O} version.${O} ${LIBS}
 
-charset.${O}: compose.uni ubin.uni wide.uni
+charset.${O}: compose.uni ubin.uni
 
 ${OBJ}: ${srcdir}/less.h ${srcdir}/funcs.h defines.h lang.h pattern.h xbuf.h
 screen.${O} ttyin.${O}: pckeys.h

@@ -706,3 +706,11 @@ void * memcpy(void *dst, constant void *src, size_t len);
 #if !HAVE_STRSTR
 char * strstr(constant char *haystack, constant char *needle);
 #endif
+
+#ifdef HAVE_PCRE2
+#ifdef HAVE_PCRE2_JIT
+#define PCRE2_MATCH_FUNCTION pcre2_jit_match
+#else
+#define PCRE2_MATCH_FUNCTION pcre2_match
+#endif
+#endif
